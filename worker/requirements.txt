@@ -1,0 +1,6 @@
+Flask
+Redis
+gunicorn
+numpy
+rq
+mysqlclient

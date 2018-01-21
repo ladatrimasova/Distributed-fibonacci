@@ -1,0 +1,53 @@
+version: "3"
+services:
+
+  visualizer:
+    image: dockersamples/visualizer
+    ports:
+      - "8080:8080"
+    stop_grace_period: 1m30s
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+
+  redis:
+    image: redis:alpine
+    ports:
+      - 5000:6379
+    deploy:
+      replicas: 1
+      update_config:
+        parallelism: 2
+        delay: 10s
+      restart_policy:
+        condition: on-failure
+  db:
+    image: mysql:latest
+    ports:
+      - 6603:3306
+    volumes:
+      - mysqldata:/var/lib/mysql2
+    environment:
+        - MYSQL_ROOT_PASSWORD=342
+        - MYSQL_DATABASE=test
+        - MYSQL_USER=root
+
+  master:
+    image: master:latest
+    ports:
+      - 2345:1234
+    depends_on:
+      - worker
+
+  worker:
+    image: worker:latest
+    ports:
+      - 5200:5201
+    depends_on:
+      - db
+      - redis
+    deploy:
+      mode: replicated
+      replicas: 2
+
+volumes:
+  mysqldata:
